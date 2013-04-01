@@ -156,16 +156,32 @@ getBoxplotDifference <- function(firstEx, cellFunc, cellSeg) {
 }
 
 plotCellVarience <- function(cellFunc, cellSeg) {
-  files <- dir(".")
+  # Массовое построение графиков дисперсного анализа
+  # и корреляций между полушариями
+  # Заносим в files имена только папок
+  files <- dir()
+  files <- files[file.info(files)$isdir]
   va <- list()
-  vaNames <- vector()
-  # l <- list(f1=x,f2=y)
-  # c(l, f3=u)
+  vaNames <- list()
+  corr <- list()
+  corrNames <- list()
   for (f in files) {
     c <- getCellLateralCorrelation(f, cellFunc, cellSeg)
+    corr <- c(corr, c)
+    corrNames <- c(corrNames, f)
     l <- getBoxplotDifference(f, cellFunc, cellSeg)
-    
+    va <- c(va, list(l[[1]]))
+    va <- c(va, list(l[[2]]))
+    vaNames <- c(vaNames, paste(f, "L"))
+    vaNames <- c(vaNames, paste(f, "R"))
   }
+  names(va) <- vaNames
+  names(corr) <- corrNames
+  write.table(corr, file=paste(cellFunc, cellSeg, "corr.txt", sep="."))
+  grapgName <- paste(cellFunc, cellSeg, "png", sep=".")
+  png(file = grapgName)
+  boxplot(va)
+  dev.off()
 }
 
 getCellHarmonicVariations <- function(cellFunc, cellSeg, leg="") {
